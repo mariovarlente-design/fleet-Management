@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database & History Unit | PT Klase Auto Graha (KAR)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800">
+
+    <div class="min-h-screen flex flex-col md:flex-row">
+        
+        <!-- SIDEBAR NAVIGASI MODULAR -->
+        <aside class="w-full md:w-64 bg-[#0f1b2d] text-slate-300 flex flex-col justify-between shrink-0 shadow-lg">
+            <div>
+                <div class="p-6 border-b border-slate-800 flex items-center space-x-3">
+                    <div class="bg-[#e8a317] text-[#0f1b2d] font-extrabold p-2.5 rounded-xl text-sm">KAR</div>
+                    <div>
+                        <h2 class="text-white font-bold text-sm tracking-wide">Klase Auto Graha</h2>
+                        <p class="text-xs text-slate-400">Fleet Management</p>
+                    </div>
+                </div>
+                <nav class="p-4 space-y-1.5 text-sm font-medium">
+                    <a href="index.html" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors hover:bg-slate-800 text-slate-300">
+                        <i class="fa-solid fa-chart-pie w-5"></i> <span>Dashboard Highlight</span>
+                    </a>
+                    <a href="summary.html" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors hover:bg-slate-800 text-slate-300">
+                        <i class="fa-solid fa-file-invoice-dollar w-5"></i> <span>Summary & Penagihan</span>
+                    </a>
+                    <a href="database-instansi.html" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors hover:bg-slate-800 text-slate-300">
+                        <i class="fa-solid fa-building-shield w-5"></i> <span>Data Instansi & Kontrak</span>
+                    </a>
+                    <a href="database-kendaraan.html" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors bg-[#e8a317] text-[#0f1b2d] font-bold">
+                        <i class="fa-solid fa-car w-5"></i> <span>Database & History Unit</span>
+                    </a>
+                    <a href="simulator-settings.html" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors hover:bg-slate-800 text-slate-300">
+                        <i class="fa-solid fa-calculator w-5"></i> <span>Simulasi & Penawaran</span>
+                    </a>
+                </nav>
+            </div>
+            <div class="p-4 border-t border-slate-800 text-xs space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-400">User: <b class="text-white">admin</b></span>
+                    <a href="index.html" class="text-rose-400 hover:text-rose-300 font-semibold"><i class="fa-solid fa-right-from-bracket"></i> Keluar</a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CONTENT CONTAINER -->
+        <div class="flex-1 flex flex-col min-w-0">
+            
+            <!-- TOP HEADER -->
+            <header class="bg-white border-b border-slate-200 px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+                <div class="flex items-center space-x-3">
+                    <span class="text-xs bg-amber-100 text-amber-800 font-bold px-2.5 py-1 rounded-full uppercase">Modul Database Kendaraan</span>
+                    <h2 class="font-bold text-slate-800 text-sm hidden lg:inline">PT Klase Auto Graha (KAR)</h2>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="downloadUnitTemplate()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold px-3 py-2.5 rounded-xl transition-colors inline-flex items-center shadow-sm cursor-pointer">
+                        <i class="fa-solid fa-download mr-1.5"></i> Template Unit
+                    </button>
+                    <label for="uploadUnitFile" class="cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-colors inline-flex items-center shadow-sm">
+                        <i class="fa-solid fa-file-excel mr-2"></i> Upload Database Unit
+                    </label>
+                    <input type="file" id="uploadUnitFile" accept=".xlsx, .xls" class="hidden" onchange="handleUnitUpload(event)">
+                </div>
+            </header>
+
+            <!-- MAIN VIEW -->
+            <main class="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto overflow-y-auto space-y-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-[#0f1b2d]">Database Unit Kendaraan & History Card</h1>
+                    <p class="text-slate-500 text-sm">Kelola armada kendaraan aktif. Klik pada salah satu baris unit untuk membuka kartu riwayat lengkap (*History Card*).</p>
+                </div>
+
+                <!-- PENCARIAN -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Cari Instansi / Satker</label>
+                            <input type="text" id="searchInstansi" onkeyup="filterActiveUnits()" placeholder="Contoh: Kementerian..." class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Cari Nopol / Merk / Tipe</label>
+                            <input type="text" id="searchKeyword" onkeyup="filterActiveUnits()" placeholder="Contoh: B 1234 ABC, Innova..." class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-amber-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TABEL UNIT -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-slate-800">Daftar Unit Kendaraan Aktif <span class="text-xs text-slate-400 font-normal">(Klik baris untuk buka History Card)</span></h3>
+                        <span class="text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full" id="activeUnitCount">2 unit</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 uppercase text-xs tracking-wider border-b border-slate-200">
+                                    <th class="py-3 px-4">No</th>
+                                    <th class="py-3 px-4">Instansi / Satker</th>
+                                    <th class="py-3 px-4">No. Polisi</th>
+                                    <th class="py-3 px-4">Merk & Tipe Kendaraan</th>
+                                    <th class="py-3 px-4 text-center">Tahun Perolehan</th>
+                                    <th class="py-3 px-4 text-center">Masa Kontrak</th>
+                                    <th class="py-3 px-4 text-right">Nilai Sewa (IDR)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm divide-y divide-slate-100 text-slate-700" id="activeUnitsTableBody">
+                                <tr class="hover:bg-amber-50/50 transition-colors border-b border-slate-100 cursor-pointer" onclick="openHistoryCard(0)">
+                                    <td class="py-3 px-4 text-slate-500 font-medium">1</td>
+                                    <td class="py-3 px-4 font-semibold text-slate-800">Kementerian Sekretariat Negara</td>
+                                    <td class="py-3 px-4"><span class="bg-slate-100 text-slate-800 px-2 py-1 rounded text-xs font-mono font-bold">B 1234 ABC</span></td>
+                                    <td class="py-3 px-4 text-slate-700">Toyota &mdash; <small class="text-slate-500">Innova Zenix V HV</small></td>
+                                    <td class="py-3 px-4 text-center text-xs font-semibold">2025</td>
+                                    <td class="py-3 px-4 text-center text-xs text-slate-600">2027-01-01 s.d <br>2027-12-31</td>
+                                    <td class="py-3 px-4 text-right font-bold text-emerald-700">Rp 167.400.000</td>
+                                </tr>
+                                <tr class="hover:bg-amber-50/50 transition-colors border-b border-slate-100 cursor-pointer" onclick="openHistoryCard(1)">
+                                    <td class="py-3 px-4 text-slate-500 font-medium">2</td>
+                                    <td class="py-3 px-4 font-semibold text-slate-800">Dewan Perwakilan Daerah (DPD RI)</td>
+                                    <td class="py-3 px-4"><span class="bg-slate-100 text-slate-800 px-2 py-1 rounded text-xs font-mono font-bold">B 5678 XYZ</span></td>
+                                    <td class="py-3 px-4 text-slate-700">Toyota &mdash; <small class="text-slate-500">Fortuner VRZ</small></td>
+                                    <td class="py-3 px-4 text-center text-xs font-semibold">2025</td>
+                                    <td class="py-3 px-4 text-center text-xs text-slate-600">2027-01-01 s.d <br>2027-12-31</td>
+                                    <td class="py-3 px-4 text-right font-bold text-emerald-700">Rp 154.500.000</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- MODAL: HISTORY CARD KOMPREHENSIF PER UNIT -->
+    <div id="historyModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-4xl w-full p-6 shadow-2xl border border-slate-100 space-y-6 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-4">
+                <div>
+                    <span class="text-xs bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded uppercase">History Card Unit Armada</span>
+                    <h3 class="font-bold text-slate-900 text-xl mt-1" id="modalNopolTitle">-</h3>
+                </div>
+                <button onclick="closeHistoryModal()" class="text-slate-400 hover:text-slate-600 font-bold cursor-pointer text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Informasi Umum Unit -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-xl text-xs">
+                <div>
+                    <span class="text-slate-400 block">Merk & Tipe</span>
+                    <b class="text-slate-800 text-sm" id="modalMerk">-</b>
+                </div>
+                <div>
+                    <span class="text-slate-400 block">Tahun Perolehan/Aset</span>
+                    <b class="text-slate-800 text-sm" id="modalTahun">-</b>
+                </div>
+                <div>
+                    <span class="text-slate-400 block">Instansi Pengguna</span>
+                    <b class="text-slate-800 text-sm" id="modalInstansi">-</b>
+                </div>
+                <div>
+                    <span class="text-slate-400 block">Status Kontrak</span>
+                    <b class="text-emerald-600 text-sm">Aktif Berjalan</b>
+                </div>
+            </div>
+
+            <!-- Bagian Riwayat (Sewa, Service, Insiden, Pajak) -->
+            <div class="space-y-4 text-sm">
+                <!-- 1. Riwayat Sewa -->
+                <div>
+                    <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider mb-2 text-amber-600"><i class="fa-solid fa-file-contract mr-1"></i> 1. Riwayat Kontrak & Sewa</h4>
+                    <div class="bg-white border border-slate-200 rounded-xl p-3 text-xs" id="historySewaContent"></div>
+                </div>
+
+                <!-- 2. Riwayat Servis & Sparepart -->
+                <div>
+                    <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider mb-2 text-blue-600"><i class="fa-solid fa-screwdriver-wrench mr-1"></i> 2. Riwayat Servis & Pergantian Sparepart</h4>
+                    <div class="bg-white border border-slate-200 rounded-xl p-3 text-xs" id="historyServiceContent"></div>
+                </div>
+
+                <!-- 3. Riwayat Insiden / Klaim Asuransi -->
+                <div>
+                    <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider mb-2 text-rose-600"><i class="fa-solid fa-car-burst mr-1"></i> 3. Riwayat Insiden & Klaim Asuransi</h4>
+                    <div class="bg-white border border-slate-200 rounded-xl p-3 text-xs" id="historyInsidenContent"></div>
+                </div>
+
+                <!-- 4. Riwayat Pajak & STNK -->
+                <div>
+                    <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider mb-2 text-emerald-600"><i class="fa-solid fa-receipt mr-1"></i> 4. Riwayat Pajak Kendaraan & STNK Tahunan</h4>
+                    <div class="bg-white border border-slate-200 rounded-xl p-3 text-xs" id="historyPajakContent"></div>
+                </div>
+            </div>
+
+            <div class="pt-2 flex justify-end">
+                <button onclick="closeHistoryModal()" class="bg-[#0f1b2d] text-white font-semibold px-5 py-2 rounded-xl text-xs cursor-pointer">Tutup History Card</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT DATABASE & HISTORY -->
+    <script>
+        let activeUnitsData = [
+            {
+                instansi: 'Kementerian Sekretariat Negara',
+                nopol: 'B 1234 ABC',
+                merk: 'Toyota',
+                type: 'Innova Zenix V HV',
+                tahun: '2025',
+                startDate: '2027-01-01',
+                endDate: '2027-12-31',
+                totalHarga: 167400000,
+                historySewa: [{ periode: "2027 (Berjalan)", instansi: "Kementerian Sekretariat Negara", nilai: 167400000 }],
+                historyService: [{ tanggal: "2026-02-10", jenis: "Servis Berkala 20.000 KM", sparepart: "Oli Mesin, Filter Oli, Filter AC", biaya: 950000 }],
+                historyInsiden: [],
+                historyPajak: [{ tanggalBayar: "2026-03-15", jenisPajak: "STNK Tahunan", nominal: 4200000, status: "Lunas" }]
+            },
+            {
+                instansi: 'Dewan Perwakilan Daerah (DPD RI)',
+                nopol: 'B 5678 XYZ',
+                merk: 'Toyota',
+                type: 'Fortuner VRZ',
+                tahun: '2025',
+                startDate: '2027-01-01',
+                endDate: '2027-12-31',
+                totalHarga: 154500000,
+                historySewa: [{ periode: "2027 (Berjalan)", instansi: "Dewan Perwakilan Daerah (DPD RI)", nilai: 154500000 }],
+                historyService: [{ tanggal: "2026-01-20", jenis: "Ganti Kampas Rem & Tune Up", sparepart: "Brake Pad Set", biaya: 1450000 }],
+                historyInsiden: [{ tanggal: "2025-11-05", keterangan: "Baret ringan bemper belakang (Klaim Asuransi Disetujui)" }],
+                historyPajak: [{ tanggalBayar: "2026-04-10", jenisPajak: "STNK Tahunan", nominal: 5100000, status: "Lunas" }]
+            }
+        ];
+
+        function formatRupiah(angka) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka || 0);
+        }
+
+        function downloadUnitTemplate() {
+            const wb = XLSX.utils.book_new();
+            const data = [
+                ["Instansi / Satker", "No. Polisi", "Merk", "Tipe", "Tahun Perolehan", "Masa Mulai", "Masa Akhir", "Total Harga Sewa (IDR)"],
+                ["Kementerian Sekretariat Negara", "B 1234 ABC", "Toyota", "Innova Zenix V HV", "2025", "2027-01-01", "2027-12-31", 167400000],
+                ["Dewan Perwakilan Daerah (DPD RI)", "B 5678 XYZ", "Toyota", "Fortuner VRZ", "2025", "2027-01-01", "2027-12-31", 154500000]
+            ];
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            XLSX.utils.book_append_sheet(wb, ws, "UnitAktif");
+            XLSX.writeFile(wb, "Template_UnitAktif_KAR.xlsx");
+        }
+
+        function handleUnitUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const ws = workbook.Sheets[workbook.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(ws, {header: 1, defval: ""});
+                    
+                    activeUnitsData = [];
+                    for (let r = 1; r < rows.length; r++) {
+                        const row = rows[r];
+                        if (!row || !row[1]) continue;
+                        activeUnitsData.push({
+                            instansi: String(row[0]).trim(),
+                            nopol: String(row[1]).trim(),
+                            merk: String(row[2]).trim() || 'Toyota',
+                            type: String(row[3]).trim() || '',
+                            tahun: row[4] || '2025',
+                            startDate: String(row[5]).substring(0, 10) || '2027-01-01',
+                            endDate: String(row[6]).substring(0, 10) || '2027-12-31',
+                            totalHarga: parseFloat(row[7]) || 0,
+                            historySewa: [{ periode: "2027 (Berjalan)", instansi: String(row[0]).trim(), nilai: parseFloat(row[7]) || 0 }],
+                            historyService: [{ tanggal: "2026-02-10", jenis: "Servis Berkala Standar", sparepart: "Oli Mesin & Filter", biaya: 850000 }],
+                            historyInsiden: [],
+                            historyPajak: [{ tanggalBayar: "2026-03-15", jenisPajak: "STNK Tahunan", nominal: 4000000, status: "Lunas" }]
+                        });
+                    }
+                    renderActiveUnitsTable(activeUnitsData);
+                    alert(`Berhasil mengimpor ${activeUnitsData.length} data unit aktif!`);
+                } catch(err) {
+                    alert("Gagal membaca file Unit: " + err.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function renderActiveUnitsTable(data) {
+            const tbody = document.getElementById('activeUnitsTableBody');
+            tbody.innerHTML = '';
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-slate-400">Tidak ada unit kendaraan ditemukan.</td></tr>`;
+                document.getElementById('activeUnitCount').innerText = `0 unit`;
+                return;
+            }
+            data.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-amber-50/50 transition-colors border-b border-slate-100 cursor-pointer";
+                tr.setAttribute('onclick', `openHistoryCard(${index})`);
+                tr.innerHTML = `
+                    <td class="py-3 px-4 text-slate-500 font-medium">${index + 1}</td>
+                    <td class="py-3 px-4 font-semibold text-slate-800">${item.instansi}</td>
+                    <td class="py-3 px-4"><span class="bg-slate-100 text-slate-800 px-2 py-1 rounded text-xs font-mono font-bold">${item.nopol}</span></td>
+                    <td class="py-3 px-4 text-slate-700">${item.merk} &mdash; <small class="text-slate-500">${item.type || ''}</small></td>
+                    <td class="py-3 px-4 text-center text-xs font-semibold">${item.tahun || '-'}</td>
+                    <td class="py-3 px-4 text-center text-xs text-slate-600">${item.startDate || '-'} s.d <br>${item.endDate || '-'}</td>
+                    <td class="py-3 px-4 text-right font-bold text-emerald-700">${formatRupiah(item.totalHarga)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            document.getElementById('activeUnitCount').innerText = `${data.length} unit`;
+        }
+
+        function filterActiveUnits() {
+            const instansiKey = document.getElementById('searchInstansi').value.toLowerCase();
+            const keyword = document.getElementById('searchKeyword').value.toLowerCase();
+            const filtered = activeUnitsData.filter(item => {
+                const matchInstansi = (item.instansi && item.instansi.toLowerCase().includes(instansiKey));
+                const matchKeyword = (item.nopol && item.nopol.toLowerCase().includes(keyword)) || 
+                                     (item.merk && item.merk.toLowerCase().includes(keyword)) ||
+                                     (item.type && item.type.toLowerCase().includes(keyword));
+                return matchInstansi && matchKeyword;
+            });
+            renderActiveUnitsTable(filtered);
+        }
+
+        function openHistoryCard(index) {
+            const unit = activeUnitsData[index];
+            if(!unit) return;
+
+            document.getElementById('modalNopolTitle').innerText = unit.nopol;
+            document.getElementById('modalMerk').innerText = `${unit.merk} (${unit.type})`;
+            document.getElementById('modalTahun').innerText = unit.tahun;
+            document.getElementById('modalInstansi').innerText = unit.instansi;
+
+            // Render History Sewa
+            const sewaContainer = document.getElementById('historySewaContent');
+            sewaContainer.innerHTML = unit.historySewa.length > 0 ? 
+                unit.historySewa.map(s => `<div><b>${s.periode}</b> &mdash; ${s.instansi} (${formatRupiah(s.nilai)})</div>`).join('') :
+                `<p class="text-slate-400">Belum ada riwayat kontrak.</p>`;
+
+            // Render History Service
+            const serviceContainer = document.getElementById('historyServiceContent');
+            serviceContainer.innerHTML = unit.historyService.length > 0 ?
+                unit.historyService.map(sv => `<div class="mb-1 pb-1 border-b border-slate-100"><b>${sv.tanggal}</b>: ${sv.jenis} (${sv.sparepart}) &mdash; <span class="text-blue-600 font-bold">${formatRupiah(sv.biaya)}</span></div>`).join('') :
+                `<p class="text-slate-400">Belum ada catatan servis/sparepart.</p>`;
+
+            // Render History Insiden
+            const insidenContainer = document.getElementById('historyInsidenContent');
+            insidenContainer.innerHTML = unit.historyInsiden.length > 0 ?
+                unit.historyInsiden.map(ins => `<div>${ins.tanggal} &mdash; ${ins.keterangan}</div>`).join('') :
+                `<p class="text-slate-400">Tidak ada catatan insiden.</p>`;
+
+            // Render History Pajak
+            const pajakContainer = document.getElementById('historyPajakContent');
+            pajakContainer.innerHTML = unit.historyPajak.length > 0 ?
+                unit.historyPajak.map(pj => `<div><b>${pj.tanggalBayar}</b>: Pembayaran ${pj.jenisPajak} sebesar ${formatRupiah(pj.nominal)} (<span class="text-emerald-600 font-bold">${pj.status}</span>)</div>`).join('') :
+                `<p class="text-slate-400">Belum ada catatan pembayaran pajak.</p>`;
+
+            document.getElementById('historyModal').classList.remove('hidden');
+        }
+
+        function closeHistoryModal() {
+            document.getElementById('historyModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
