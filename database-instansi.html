@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Instansi & Kontrak | PT Klase Auto Graha (KAR)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800">
+
+    <div class="min-h-screen flex flex-col md:flex-row">
+        
+        <!-- SIDEBAR NAVIGASI MODULAR -->
+        <aside class="w-full md:w-64 bg-[#0f1b2d] text-slate-300 flex flex-col justify-between shrink-0 shadow-lg">
+            <div>
+                <div class="p-6 border-b border-slate-800 flex items-center space-x-3">
+                    <div class="bg-[#e8a317] text-[#0f1b2d] font-extrabold p-2.5 rounded-xl text-sm">KAR</div>
+                    <div>
+                        <h2 class="text-white font-bold text-sm tracking-wide">Klase Auto Graha</h2>
+                        <p class="text-xs text-slate-400">Fleet Management</p>
+                    </div>
+                </div>
+                <nav class="p-4 space-y-1.5 text-sm font-medium">
+                    <a href="index.html" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors hover:bg-slate-800 text-slate-300">
+                        <i class="fa-solid fa-chart-pie w-5"></i> <span>Dashboard Highlight</span>
+                    </a>
+                    <a href="summary.html" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors hover:bg-slate-800 text-slate-300">
+                        <i class="fa-solid fa-file-invoice-dollar w-5"></i> <span>Summary & Penagihan</span>
+                    </a>
+                    <a href="database-instansi.html" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors bg-[#e8a317] text-[#0f1b2d] font-bold">
+                        <i class="fa-solid fa-building-shield w-5"></i> <span>Data Instansi & Kontrak</span>
+                    </a>
+                    <a href="database-kendaraan.html" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors hover:bg-slate-800 text-slate-300">
+                        <i class="fa-solid fa-car w-5"></i> <span>Database & History Unit</span>
+                    </a>
+                    <a href="simulator-settings.html" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors hover:bg-slate-800 text-slate-300">
+                        <i class="fa-solid fa-calculator w-5"></i> <span>Simulasi & Penawaran</span>
+                    </a>
+                </nav>
+            </div>
+            <div class="p-4 border-t border-slate-800 text-xs space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-400">User: <b class="text-white">admin</b></span>
+                    <a href="index.html" class="text-rose-400 hover:text-rose-300 font-semibold"><i class="fa-solid fa-right-from-bracket"></i> Keluar</a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CONTENT CONTAINER -->
+        <div class="flex-1 flex flex-col min-w-0">
+            
+            <!-- TOP HEADER -->
+            <header class="bg-white border-b border-slate-200 px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+                <div class="flex items-center space-x-3">
+                    <span class="text-xs bg-amber-100 text-amber-800 font-bold px-2.5 py-1 rounded-full uppercase">Modul Data Instansi</span>
+                    <h2 class="font-bold text-slate-800 text-sm hidden lg:inline">PT Klase Auto Graha (KAR)</h2>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="downloadInstansiTemplate()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold px-3 py-2.5 rounded-xl transition-colors inline-flex items-center shadow-sm cursor-pointer">
+                        <i class="fa-solid fa-download mr-1.5"></i> Template Instansi
+                    </button>
+                    <label for="uploadInstansiFile" class="cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-colors inline-flex items-center shadow-sm">
+                        <i class="fa-solid fa-file-excel mr-2"></i> Upload Data Instansi
+                    </label>
+                    <input type="file" id="uploadInstansiFile" accept=".xlsx, .xls" class="hidden" onchange="handleInstansiUpload(event)">
+                </div>
+            </header>
+
+            <!-- MAIN VIEW -->
+            <main class="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto overflow-y-auto space-y-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-[#0f1b2d]">Data Instansi & Profil Kontrak Sewa</h1>
+                    <p class="text-slate-500 text-sm">Kelola daftar instansi pemerintah / satker yang menjalin kerja sama sewa armada kendaraan.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-slate-800">Daftar Instansi / Satker Mitra Aktif</h3>
+                        <span class="text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full" id="instansiCount">2 instansi</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 uppercase text-xs tracking-wider border-b border-slate-200">
+                                    <th class="py-3 px-4">No</th>
+                                    <th class="py-3 px-4">Nama Instansi / Satker</th>
+                                    <th class="py-3 px-4">Nomor Kontrak Kerja Sama</th>
+                                    <th class="py-3 px-4 text-center">Volume Unit</th>
+                                    <th class="py-3 px-4 text-right">Nilai Kontrak Total (IDR)</th>
+                                    <th class="py-3 px-4 text-center">Masa Berlaku Kontrak</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm divide-y divide-slate-100 text-slate-700" id="instansiTableBody">
+                                <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100">
+                                    <td class="py-3 px-4 text-slate-500 font-medium">1</td>
+                                    <td class="py-3 px-4 font-bold text-slate-800">Kementerian Sekretariat Negara</td>
+                                    <td class="py-3 px-4 font-mono text-xs text-slate-600">PKS/12/KAR-KEM/IV/2027</td>
+                                    <td class="py-3 px-4 text-center font-bold text-blue-600">5 Unit</td>
+                                    <td class="py-3 px-4 text-right font-bold text-emerald-700">Rp 837.000.000</td>
+                                    <td class="py-3 px-4 text-center text-xs text-slate-600">01 Jan 2027 s.d 31 Des 2027</td>
+                                </tr>
+                                <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100">
+                                    <td class="py-3 px-4 text-slate-500 font-medium">2</td>
+                                    <td class="py-3 px-4 font-bold text-slate-800">Dewan Perwakilan Daerah (DPD RI)</td>
+                                    <td class="py-3 px-4 font-mono text-xs text-slate-600">PKS/15/KAR-DPD/V/2027</td>
+                                    <td class="py-3 px-4 text-center font-bold text-blue-600">4 Unit</td>
+                                    <td class="py-3 px-4 text-right font-bold text-emerald-700">Rp 669.600.000</td>
+                                    <td class="py-3 px-4 text-center text-xs text-slate-600">01 Jan 2027 s.d 31 Des 2027</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- SCRIPT INSTANSI -->
+    <script>
+        let instansiData = [
+            { nama: 'Kementerian Sekretariat Negara', noKontrak: 'PKS/12/KAR-KEM/IV/2027', qty: 5, nilai: 837000000, masa: '01 Jan 2027 s.d 31 Des 2027' },
+            { nama: 'Dewan Perwakilan Daerah (DPD RI)', noKontrak: 'PKS/15/KAR-DPD/V/2027', qty: 4, nilai: 669600000, masa: '01 Jan 2027 s.d 31 Des 2027' }
+        ];
+
+        function formatRupiah(angka) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka || 0);
+        }
+
+        function downloadInstansiTemplate() {
+            const wb = XLSX.utils.book_new();
+            const data = [
+                ["Nama Instansi / Satker", "Nomor Kontrak", "Volume Unit", "Nilai Kontrak Total (IDR)", "Masa Berlaku Kontrak"],
+                ["Kementerian Sekretariat Negara", "PKS/12/KAR-KEM/IV/2027", 5, 837000000, "01 Jan 2027 s.d 31 Des 2027"],
+                ["Dewan Perwakilan Daerah (DPD RI)", "PKS/15/KAR-DPD/V/2027", 4, 669600000, "01 Jan 2027 s.d 31 Des 2027"]
+            ];
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            XLSX.utils.book_append_sheet(wb, ws, "Instansi");
+            XLSX.writeFile(wb, "Template_Instansi_KAR.xlsx");
+        }
+
+        function handleInstansiUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const ws = workbook.Sheets[workbook.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(ws, {header: 1, defval: ""});
+                    
+                    instansiData = [];
+                    for (let r = 1; r < rows.length; r++) {
+                        const row = rows[r];
+                        if (!row || !row[0]) continue;
+                        instansiData.push({
+                            nama: String(row[0]).trim(),
+                            noKontrak: String(row[1]).trim() || '-',
+                            qty: parseInt(row[2]) || 1,
+                            nilai: parseFloat(row[3]) || 0,
+                            masa: String(row[4]).trim() || '-'
+                        });
+                    }
+                    renderInstansiTable();
+                    alert(`Berhasil mengimpor ${instansiData.length} data instansi!`);
+                } catch(err) {
+                    alert("Gagal membaca file Instansi: " + err.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function renderInstansiTable() {
+            const tbody = document.getElementById('instansiTableBody');
+            tbody.innerHTML = '';
+            instansiData.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="py-3 px-4 text-slate-500 font-medium">${index + 1}</td>
+                    <td class="py-3 px-4 font-bold text-slate-800">${item.nama}</td>
+                    <td class="py-3 px-4 font-mono text-xs text-slate-600">${item.noKontrak}</td>
+                    <td class="py-3 px-4 text-center font-bold text-blue-600">${item.qty} Unit</td>
+                    <td class="py-3 px-4 text-right font-bold text-emerald-700">${formatRupiah(item.nilai)}</td>
+                    <td class="py-3 px-4 text-center text-xs text-slate-600">${item.masa}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            document.getElementById('instansiCount').innerText = `${instansiData.length} instansi`;
+        }
+    </script>
+</body>
+</html>
