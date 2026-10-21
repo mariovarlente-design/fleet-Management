@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Summary & Penagihan | PT Klase Auto Graha (KAR)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800">
+
+    <div class="min-h-screen flex flex-col md:flex-row">
+        
+        <!-- SIDEBAR NAVIGASI MODULAR -->
+        <aside class="w-full md:w-64 bg-[#0f1b2d] text-slate-300 flex flex-col justify-between shrink-0 shadow-lg">
+            <div>
+                <div class="p-6 border-b border-slate-800 flex items-center space-x-3">
+                    <div class="bg-[#e8a317] text-[#0f1b2d] font-extrabold p-2.5 rounded-xl text-sm">KAR</div>
+                    <div>
+                        <h2 class="text-white font-bold text-sm tracking-wide">Klase Auto Graha</h2>
+                        <p class="text-xs text-slate-400">Fleet Management</p>
+                    </div>
+                </div>
+                <nav class="p-4 space-y-1.5 text-sm font-medium">
+                    <a href="index.html" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors hover:bg-slate-800 text-slate-300">
+                        <i class="fa-solid fa-chart-pie w-5"></i> <span>Dashboard Highlight</span>
+                    </a>
+                    <a href="summary.html" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors bg-[#e8a317] text-[#0f1b2d] font-bold">
+                        <i class="fa-solid fa-file-invoice-dollar w-5"></i> <span>Summary & Penagihan</span>
+                    </a>
+                    <a href="database-instansi.html" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors hover:bg-slate-800 text-slate-300">
+                        <i class="fa-solid fa-building-shield w-5"></i> <span>Data Instansi & Kontrak</span>
+                    </a>
+                    <a href="database-kendaraan.html" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors hover:bg-slate-800 text-slate-300">
+                        <i class="fa-solid fa-car w-5"></i> <span>Database & History Unit</span>
+                    </a>
+                    <a href="simulator-settings.html" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors hover:bg-slate-800 text-slate-300">
+                        <i class="fa-solid fa-calculator w-5"></i> <span>Simulasi & Penawaran</span>
+                    </a>
+                </nav>
+            </div>
+            <div class="p-4 border-t border-slate-800 text-xs space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-400">User: <b class="text-white">admin</b></span>
+                    <a href="index.html" class="text-rose-400 hover:text-rose-300 font-semibold"><i class="fa-solid fa-right-from-bracket"></i> Keluar</a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CONTENT CONTAINER -->
+        <div class="flex-1 flex flex-col min-w-0">
+            
+            <!-- TOP HEADER -->
+            <header class="bg-white border-b border-slate-200 px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+                <div class="flex items-center space-x-3">
+                    <span class="text-xs bg-amber-100 text-amber-800 font-bold px-2.5 py-1 rounded-full uppercase">Modul Penagihan & Invoice</span>
+                    <h2 class="font-bold text-slate-800 text-sm hidden lg:inline">PT Klase Auto Graha (KAR)</h2>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="downloadSummaryTemplate()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold px-3 py-2.5 rounded-xl transition-colors inline-flex items-center shadow-sm cursor-pointer">
+                        <i class="fa-solid fa-download mr-1.5"></i> Template Summary
+                    </button>
+                    <label for="uploadSummaryFile" class="cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-colors inline-flex items-center shadow-sm">
+                        <i class="fa-solid fa-file-excel mr-2"></i> Upload Summary
+                    </label>
+                    <input type="file" id="uploadSummaryFile" accept=".xlsx, .xls" class="hidden" onchange="handleSummaryUpload(event)">
+                </div>
+            </header>
+
+            <!-- MAIN VIEW -->
+            <main class="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto overflow-y-auto space-y-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-[#0f1b2d]">Summary & Riwayat Penagihan Bulanan</h1>
+                    <p class="text-slate-500 text-sm">Pantau status pembayaran termin per instansi, hitung piutang (outstanding), dan cetak tagihan resmi.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-slate-800">Daftar Rekapitulasi Tagihan Kontrak</h3>
+                        <span class="text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full" id="summaryCount">2 data</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 uppercase text-xs tracking-wider border-b border-slate-200">
+                                    <th class="py-3 px-4">Tahun</th>
+                                    <th class="py-3 px-4">Instansi / Satker</th>
+                                    <th class="py-3 px-4 text-center">Qty Unit</th>
+                                    <th class="py-3 px-4">Periode Bulan</th>
+                                    <th class="py-3 px-4 text-right">Nilai Kontrak (IDR)</th>
+                                    <th class="py-3 px-4 text-right">Nilai Bayar (IDR)</th>
+                                    <th class="py-3 px-4 text-right">Outstanding (IDR)</th>
+                                    <th class="py-3 px-4 text-center">Status</th>
+                                    <th class="py-3 px-4 text-center">Aksi Tagihan</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm divide-y divide-slate-100 text-slate-700" id="summaryTableBody">
+                                <!-- Data Dummy Awal -->
+                                <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100">
+                                    <td class="py-3 px-4 font-bold text-amber-600">2027</td>
+                                    <td class="py-3 px-4 font-semibold text-slate-800">Kementerian Sekretariat Negara</td>
+                                    <td class="py-3 px-4 text-center font-bold text-blue-600">5 Unit</td>
+                                    <td class="py-3 px-4 text-xs text-slate-600">Jan - Des 2027</td>
+                                    <td class="py-3 px-4 text-right font-bold text-slate-700">Rp 837.000.000</td>
+                                    <td class="py-3 px-4 text-right font-bold text-emerald-700">Rp 418.500.000</td>
+                                    <td class="py-3 px-4 text-right font-bold text-rose-600">Rp 418.500.000</td>
+                                    <td class="py-3 px-4 text-center text-xs"><span class="bg-amber-100 text-amber-800 px-2 py-1 rounded font-semibold">Termin I Lunas</span></td>
+                                    <td class="py-3 px-4 text-center">
+                                        <button onclick="printInvoice('Kementerian Sekretariat Negara', 418500000, 'Termin II (Jatuh Tempo)')" class="bg-[#0f1b2d] hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer shadow-sm">
+                                            <i class="fa-solid fa-print mr-1"></i> Cetak Invoice
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100">
+                                    <td class="py-3 px-4 font-bold text-amber-600">2027</td>
+                                    <td class="py-3 px-4 font-semibold text-slate-800">Dewan Perwakilan Daerah (DPD RI)</td>
+                                    <td class="py-3 px-4 text-center font-bold text-blue-600">4 Unit</td>
+                                    <td class="py-3 px-4 text-xs text-slate-600">Jan - Des 2027</td>
+                                    <td class="py-3 px-4 text-right font-bold text-slate-700">Rp 669.600.000</td>
+                                    <td class="py-3 px-4 text-right font-bold text-emerald-700">Rp 669.600.000</td>
+                                    <td class="py-3 px-4 text-right font-bold text-emerald-600">Rp 0</td>
+                                    <td class="py-3 px-4 text-center text-xs"><span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded font-semibold">Lunas</span></td>
+                                    <td class="py-3 px-4 text-center">
+                                        <button onclick="printInvoice('Dewan Perwakilan Daerah (DPD RI)', 0, 'Lunas')" class="bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer">
+                                            <i class="fa-solid fa-check mr-1"></i> Lunas
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- SCRIPT SUMMARY & INVOICE -->
+    <script>
+        let summaryData = [
+            { tahun: '2027', instansi: 'Kementerian Sekretariat Negara', qtyUnit: 5, periodeBulan: 'Jan - Des 2027', nilaiKontrak: 837000000, nilaiBayar: 418500000, keterangan: 'Termin I Lunas' },
+            { tahun: '2027', instansi: 'Dewan Perwakilan Daerah (DPD RI)', qtyUnit: 4, periodeBulan: 'Jan - Des 2027', nilaiKontrak: 669600000, nilaiBayar: 669600000, keterangan: 'Lunas' }
+        ];
+
+        function formatRupiah(angka) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka || 0);
+        }
+
+        function downloadSummaryTemplate() {
+            const wb = XLSX.utils.book_new();
+            const data = [
+                ["Tahun", "Instansi / Satker", "Qty Unit", "Periode Bulan", "Nilai Kontrak (IDR)", "Nilai Bayar (IDR)", "Keterangan"],
+                [2027, "Kementerian Sekretariat Negara", 5, "Jan - Des 2027", 837000000, 418500000, "Termin I Lunas"],
+                [2027, "Dewan Perwakilan Daerah (DPD RI)", 4, "Jan - Des 2027", 669600000, 669600000, "Lunas"]
+            ];
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            XLSX.utils.book_append_sheet(wb, ws, "Summary");
+            XLSX.writeFile(wb, "Template_Summary_KAR.xlsx");
+        }
+
+        function handleSummaryUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const ws = workbook.Sheets[workbook.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(ws, {header: 1, defval: ""});
+                    
+                    summaryData = [];
+                    for (let r = 1; r < rows.length; r++) {
+                        const row = rows[r];
+                        if (!row || !row[1]) continue;
+                        summaryData.push({
+                            tahun: row[0] || '2027',
+                            instansi: String(row[1]).trim(),
+                            qtyUnit: parseFloat(row[2]) || 1,
+                            periodeBulan: String(row[3]).trim() || '',
+                            nilaiKontrak: parseFloat(row[4]) || 0,
+                            nilaiBayar: parseFloat(row[5]) || 0,
+                            keterangan: String(row[6]).trim() || 'Aktif'
+                        });
+                    }
+                    renderSummaryTable();
+                    alert(`Berhasil mengimpor ${summaryData.length} data summary penagihan!`);
+                } catch(err) {
+                    alert("Gagal membaca file Summary: " + err.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function renderSummaryTable() {
+            const tbody = document.getElementById('summaryTableBody');
+            tbody.innerHTML = '';
+            summaryData.forEach((item) => {
+                const outstanding = item.nilaiKontrak - item.nilaiBayar;
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-bold text-amber-600">${item.tahun}</td>
+                    <td class="py-3 px-4 font-semibold text-slate-800">${item.instansi}</td>
+                    <td class="py-3 px-4 text-center font-bold text-blue-600">${item.qtyUnit || 1} Unit</td>
+                    <td class="py-3 px-4 text-xs text-slate-600">${item.periodeBulan || '-'}</td>
+                    <td class="py-3 px-4 text-right font-bold text-slate-700">${formatRupiah(item.nilaiKontrak)}</td>
+                    <td class="py-3 px-4 text-right font-bold text-emerald-700">${formatRupiah(item.nilaiBayar)}</td>
+                    <td class="py-3 px-4 text-right font-bold ${outstanding > 0 ? 'text-rose-600' : 'text-emerald-600'}">${formatRupiah(outstanding)}</td>
+                    <td class="py-3 px-4 text-center text-xs"><span class="bg-amber-100 text-amber-800 px-2 py-1 rounded font-semibold">${item.keterangan || 'Aktif'}</span></td>
+                    <td class="py-3 px-4 text-center">
+                        <button onclick="printInvoice('${item.instansi}', ${outstanding}, '${item.keterangan}')" class="bg-[#0f1b2d] hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer shadow-sm">
+                            <i class="fa-solid fa-print mr-1"></i> Cetak Invoice
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            document.getElementById('summaryCount').innerText = `${summaryData.length} data`;
+        }
+
+        function printInvoice(instansi, amount, keterangan) {
+            const invoiceNo = 'INV/' + new Date().getFullYear() + '/' + Math.floor(1000 + Math.random() * 9000);
+            const currentDate = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+            const w = window.open('', '_blank');
+            w.document.write(`
+                <html>
+                <head>
+                    <title>Invoice Resmi - PT Klase Auto Graha</title>
+                    <style>
+                        body { font-family: 'Helvetica', 'Arial', sans-serif; padding: 40px; color: #1b2a41; line-height: 1.5; }
+                        .header { border-bottom: 3px double #0f1b2d; padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; }
+                        .company { font-size: 20px; font-weight: bold; color: #0f1b2d; }
+                        .tagline { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+                        .meta { margin-bottom: 20px; font-size: 13px; }
+                        table { width: 100%; border-collapse: collapse; margin: 25px 0; font-size: 13px; }
+                        th, td { border: 1px solid #cbd5e1; padding: 10px 12px; text-align: left; }
+                        th { background: #0f1b2d; color: #fff; text-transform: uppercase; font-size: 11px; }
+                        .text-right { text-align: right; }
+                        .total-box { font-size: 16px; font-weight: bold; background: #f8fafc; padding: 15px; border-radius: 8px; margin-top: 20px; display: flex; justify-content: space-between; }
+                        .signature { margin-top: 50px; float: right; text-align: center; width: 220px; font-size: 13px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <div>
+                            <div class="company">PT KLASE AUTO GRAHA (KAR)</div>
+                            <div class="tagline">Fleet Contract & Kementerian Rental Solutions</div>
+                        </div>
+                        <div style="text-align: right; font-size: 12px;">
+                            <b>INVOICE / TAGIHAN RESMI</b><br>
+                            No: ${invoiceNo}<br>
+                            Tanggal: ${currentDate}
+                        </div>
+                    </div>
+                    <div class="meta">
+                        Kepada Yth.<br>
+                        <b>Pejabat Pembuat Komitmen / Satker ${instansi}</b><br>
+                        di Tempat
+                    </div>
+                    <p><b>Perihal: Penagihan Termin Sewa Kendaraan Operasional</b></p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Deskripsi Layanan Kontrak Sewa</th>
+                                <th class="text-right">Jumlah Tagihan (IDR)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><b>Tagihan Sewa Kendaraan Operasional Kementerian</b><br><small style="color:#64748b">Status Keterangan: ${keterangan}</small></td>
+                                <td class="text-right"><b>${formatRupiah(amount)}</b></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="total-box">
+                        <span>Total Tagihan Outstanding:</span>
+                        <span style="color: #e8a317;">${formatRupiah(amount)}</span>
+                    </div>
+                    <div style="font-size: 12px; color: #475569; margin-top: 20px;">
+                        <b>Instruksi Pembayaran:</b><br>
+                        Transfer melalui rekening resmi PT Klase Auto Graha pada Bank Mandiri Cabang Jakarta. Harap konfirmasi bukti transfer setelah pembayaran dilakukan.
+                    </div>
+                    <div class="signature">
+                        Hormat kami,<br><b>PT KLASE AUTO GRAHA (KAR)</b><br><br><br><br><b>Divisi Keuangan & Penagihan</b>
+                    </div>
+                </body>
+                </html>
+            `);
+            w.document.close();
+            w.print();
+        }
+    </script>
+</body>
+</html>
